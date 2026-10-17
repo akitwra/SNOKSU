@@ -20,6 +20,8 @@ jobs:
           --health-cmd "pg_isready -U snokgu -d snokgu_test"
           --health-interval 5s --health-timeout 3s --health-retries 15
     env:
+      APP_ENV: testing
+      DB_DATABASE: snokgu_test
       DB_CONNECTION: pgsql
       DB_HOST: 127.0.0.1
       DB_PORT: 5432
@@ -35,19 +37,21 @@ jobs:
       - run: composer install --prefer-dist --no-interaction --no-progress
       - run: cp .env.example .env && php artisan key:generate
       - run: vendor/bin/pint --test
-      - run: php artisan test --log-junit=test-results.xml
-      - name: Annotate test failures
-        if: failure()
+      - name: Run application tests
+        shell: bash
         run: |
-          python3 - <<'PYTHON'
-          import pathlib, xml.etree.ElementTree as ET
-          report = pathlib.Path('test-results.xml')
-          if report.exists():
-              for case in ET.parse(report).iter('testcase'):
-                  for failure in list(case):
-                      if failure.tag not in ('error', 'failure'):
-                          continue
-                      message = (case.get('name', '') + ': ' + (failure.text or failure.get('message', '')))[:3000]
-                      message = message.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
-                      print('::error::' + message)
+          set +e
+          php artisan test > /tmp/snokgu-tests.log 2>&1
+          result=$?
+          cat /tmp/snokgu-tests.log
+          if [ "$result" -ne 0 ]; then
+            python3 - <<'PYTHON'
+          import pathlib, re
+          lines = pathlib.Path('/tmp/snokgu-tests.log').read_text(errors='replace').splitlines()
+          text = '\n'.join(lines[:30] + lines[-50:])
+          text = re.sub(r'\x1b\[[0-9;]*m', '', text)
+          text = text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+          print('::error::' + text)
           PYTHON
+          fi
+          exit "$result"

@@ -43,7 +43,8 @@ class ExportPages extends Command
         }
         if (is_dir($out)) {
             File::deleteDirectory($out);
-        }File::makeDirectory($out, 0755, true);
+        }
+        File::makeDirectory($out, 0755, true);
         File::put($out.'/.sno-pages-generated', 'Static preview only.');
         $this->prefix = '/'.trim($this->option('base-path'), '/');
         if ($this->prefix === '/') {
@@ -53,7 +54,7 @@ class ExportPages extends Command
         $mentors = User::where('role', 'mentor')->whereHas('mentorProfile')->with('mentorProfile')->get();
         $events = Event::where('is_published', true)->get();
         $articles = Content::where('is_published', true)->get();
-        if ($tasks->contains(fn ($t) => ! $t->is_demo) || $mentors->contains(fn ($m) => ! $m->is_demo && ! $m->mentorProfile->is_demo) || $events->contains(fn ($e) => ! $e->is_demo) || $articles->contains(fn ($a) => ! $a->is_demo)) {
+        if ($tasks->contains(fn ($t) => ! $t->is_demo) || $mentors->contains(fn ($m) => (! $m->is_demo || ! $m->mentorProfile->is_demo)) || $events->contains(fn ($e) => ! $e->is_demo) || $articles->contains(fn ($a) => ! $a->is_demo)) {
             $this->error('Only a fresh demo dataset may be exported. Real content was found.');
 
             return self::FAILURE;
@@ -62,11 +63,14 @@ class ExportPages extends Command
         $routes = ['/', '/about', '/research', '/research/match', '/mentors', '/events', '/knowledge'];
         foreach ($tasks as $t) {
             $routes[] = '/research/'.$t->id;
-        }foreach ($mentors as $m) {
+        }
+        foreach ($mentors as $m) {
             $routes[] = '/mentors/'.$m->id;
-        }foreach ($events as $e) {
+        }
+        foreach ($events as $e) {
             $routes[] = '/events/'.$e->id;
-        }foreach ($articles as $a) {
+        }
+        foreach ($articles as $a) {
             $routes[] = '/articles/'.$a->id;
         }
         $kernel = app(Kernel::class);
@@ -77,7 +81,8 @@ class ExportPages extends Command
                 $this->error("Export failed: $uri (HTTP {$response->getStatusCode()})");
 
                 return self::FAILURE;
-            }$html = $response->getContent();
+            }
+            $html = $response->getContent();
             $this->savePage($out, $uri, $this->transform($html, $uri, $data));
             $kernel->terminate($request, $response);
         }
@@ -89,12 +94,14 @@ class ExportPages extends Command
             $response = $kernel->handle(Request::create('http://pages-export.test/templates/'.$kind));
             if ($response->getStatusCode() !== 200) {
                 return self::FAILURE;
-            }File::ensureDirectoryExists($out.'/templates');
+            }
+            File::ensureDirectoryExists($out.'/templates');
             File::put($out.'/templates/'.$kind.'.md', $response->getContent());
         }
         foreach (['css', 'js', 'fonts', 'images'] as $asset) {
             File::copyDirectory(public_path($asset), $out.'/'.$asset);
-        }foreach (File::allFiles($out.'/css') as $css) {
+        }
+        foreach (File::allFiles($out.'/css') as $css) {
             $text = File::get($css->getPathname());
             $text = str_replace(["url('/", 'url("/'], ["url('".$this->prefix.'/', 'url("'.$this->prefix.'/'], $text);
             File::put($css->getPathname(), $text);
@@ -123,9 +130,11 @@ class ExportPages extends Command
         $p = parse_url($url);
         if (! $p) {
             return $url;
-        }if (isset($p['host']) && $p['host'] !== 'pages-export.test') {
+        }
+        if (isset($p['host']) && $p['host'] !== 'pages-export.test') {
             return $url;
-        }$path = $p['path'] ?? '/';
+        }
+        $path = $p['path'] ?? '/';
         if (! str_starts_with($path, '/')) {
             return $url;
         }

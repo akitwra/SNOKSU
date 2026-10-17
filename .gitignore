@@ -27,3 +27,5 @@ Thumbs.db
 /playwright-report
 /test-results
 /dist-pages
+
+/test-results.xml
