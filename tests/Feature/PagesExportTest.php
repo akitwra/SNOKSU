@@ -26,7 +26,14 @@ class PagesExportTest extends TestCase
         $home = File::get($path.'/index.html');
         $this->assertStringContainsString('/SNOKSU/css/app.css', $home);
         $this->assertStringContainsString('/SNOKSU/research/', $home);
-        $this->assertStringContainsString('Демонстрационное превью', html_entity_decode($home));
+        $this->assertStringNotContainsString('demo-strip', $home);
+        $this->assertStringNotContainsString('Демонстрационная версия', html_entity_decode($home));
+        $this->assertStringContainsString('/SNOKSU/contacts/', $home);
+        $contacts = html_entity_decode(File::get($path.'/contacts/index.html'));
+        $this->assertStringContainsString('Конорев Александр Михайлович', $contacts);
+        $this->assertStringContainsString('mailto:konorev_am@kursksu.ru', $contacts);
+        $this->assertStringContainsString('tel:+74712513504', $contacts);
+        $this->assertStringContainsString('Пример профиля', $contacts);
         $this->assertStringNotContainsString('Личный кабинет', html_entity_decode($home));
         $this->assertStringContainsString('/SNOKSU/conferences/', $home);
         $this->assertStringContainsString('/SNOKSU/conference-announcements/', $home);

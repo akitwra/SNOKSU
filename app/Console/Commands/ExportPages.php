@@ -59,7 +59,7 @@ class ExportPages extends Command
             return self::FAILURE;
         }
         $data = ['tasks' => $tasks->map(fn ($t) => ['id' => $t->id, 'title' => $t->title, 'summary' => $t->summary, 'direction' => $t->direction, 'level' => $t->level, 'work_type' => $t->work_type, 'participation' => $t->participation, 'hours' => $t->hours, 'open' => (bool) $t->accepting])->values(), 'mentors' => $mentors->map(fn ($m) => ['id' => $m->id, 'name' => $m->name, 'interests' => $m->mentorProfile->interests, 'department' => (string) $m->mentorProfile->department_id, 'beginners' => $m->mentorProfile->beginners])->values(), 'events' => $events->map(fn ($e) => ['id' => $e->id, 'title' => $e->title, 'description' => $e->description, 'type' => $e->type, 'starts_at' => $e->starts_at->toIso8601String(), 'format' => $e->format])->values()];
-        $routes = ['/', '/about', '/research', '/research/match', '/mentors', '/events', '/conferences', '/conference-announcements', '/questions'];
+        $routes = ['/', '/about', '/research', '/research/match', '/mentors', '/events', '/conferences', '/conference-announcements', '/questions', '/contacts'];
         foreach ($tasks as $t) {
             $routes[] = '/research/'.$t->id;
         }
@@ -185,9 +185,6 @@ class ExportPages extends Command
                     $el->setAttribute($attr, $this->rewrite($el->getAttribute($attr)));
                 }
             }
-        }
-        foreach ($xpath->query('//*[contains(concat(" ",normalize-space(@class)," ")," demo-strip ")]') as $banner) {
-            $banner->textContent = 'Демонстрационное превью · События с отметкой «Пример» — учебные';
         }
         $body = $dom->getElementsByTagName('body')->item(0);
         $body->setAttribute('data-preview-route', $uri);

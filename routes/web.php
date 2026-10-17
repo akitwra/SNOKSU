@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/health', HealthController::class);
 Route::get('/', [PublicController::class, 'home'])->name('home');
 Route::get('/results/{research}', [PublicationController::class, 'show']);
+Route::get('/contacts', [PublicController::class, 'contacts']);
 Route::get('/about', [PublicController::class, 'about']);
 Route::get('/research', [PublicController::class, 'research']);
 Route::get('/research/match', [PublicController::class, 'match']);

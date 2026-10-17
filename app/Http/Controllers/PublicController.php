@@ -22,6 +22,11 @@ class PublicController extends Controller
         return view('about', ['faqs' => Content::where('type', 'faq')->where('is_published', true)->orderBy('id')->get(), 'news' => Content::where('type', 'news')->where('is_published', true)->latest()->get(), 'documents' => Content::where('type', 'document')->where('is_published', true)->get(), 'team' => User::where('role', 'organizer')->where('is_demo', false)->get()]);
     }
 
+    public function contacts()
+    {
+        return view('contacts', ['primary' => config('contacts.primary'), 'example' => config('contacts.example')]);
+    }
+
     public function research(Request $r)
     {
         $r->validate(['q' => 'nullable|string|max:150', 'direction' => 'nullable|string|max:100', 'level' => 'nullable|string|max:100', 'work_type' => 'nullable|string|max:100', 'participation' => 'nullable|string|max:100', 'hours' => 'nullable|integer|min:1|max:40', 'open' => 'nullable|in:1', 'match' => 'nullable|in:1']);

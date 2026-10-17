@@ -58,7 +58,7 @@ class SocietyTest extends TestCase
 
     public function test_public_sections_work_without_registration(): void
     {
-        foreach (['/', '/about', '/research', '/research/match', '/research/'.$this->task()->id, '/mentors', '/mentors/'.$this->mentor->id, '/events', '/events?view=calendar', '/events/'.Event::first()->id, '/conferences', '/conference-announcements', '/questions', '/articles/'.Content::where('type', 'knowledge')->first()->id, '/login', '/register'] as $url) {
+        foreach (['/', '/about', '/contacts', '/research', '/research/match', '/research/'.$this->task()->id, '/mentors', '/mentors/'.$this->mentor->id, '/events', '/events?view=calendar', '/events/'.Event::first()->id, '/conferences', '/conference-announcements', '/questions', '/articles/'.Content::where('type', 'knowledge')->first()->id, '/login', '/register'] as $url) {
             $this->get($url)->assertOk();
         }
         $this->get('/templates/plan')->assertOk()->assertHeader('Content-Disposition', 'attachment; filename="plan.md"');
