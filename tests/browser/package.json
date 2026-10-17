@@ -1,0 +1,10 @@
+{
+  "name": "snokgu-browser-checks",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Optional browser checks for the local demo environment",
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "playwright-core": "1.64.1"
+  }
+}

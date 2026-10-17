@@ -1,0 +1,1 @@
+@props(['title','eyebrow'=>'','description'=>''])<section class="page-head"><div class="container"><div class="breadcrumbs"><a href="/">Главная</a><span>/</span><span>{{ $title }}</span></div>@if($eyebrow)<span class="eyebrow">{{ $eyebrow }}</span>@endif<h1>{{ $title }}</h1>@if($description)<p>{{ $description }}</p>@endif{{ $slot }}</div></section>

@@ -1,0 +1,11 @@
+.git
+.env*
+vendor
+node_modules
+storage
+bootstrap/cache
+docs/previews
+tests/browser/node_modules
+tests
+docs
+.github

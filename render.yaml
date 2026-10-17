@@ -1,0 +1,52 @@
+# Full Laravel application + PostgreSQL. Free plans are for temporary evaluation.
+# Review Render's current limits and pricing before creating or upgrading resources.
+services:
+  - type: web
+    name: snokgu
+    runtime: docker
+    region: frankfurt
+    plan: free
+    branch: main
+    dockerfilePath: ./docker/Dockerfile.production
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY_SEED
+        generateValue: true
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        fromDatabase:
+          name: snokgu-db
+          property: connectionString
+      - key: SESSION_DRIVER
+        value: database
+      - key: SESSION_SECURE_COOKIE
+        value: "true"
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: TRUSTED_PROXIES
+        value: "*"
+      - key: INITIAL_ORGANIZER_NAME
+        sync: false
+      - key: INITIAL_ORGANIZER_EMAIL
+        sync: false
+      - key: INITIAL_ORGANIZER_PASSWORD
+        sync: false
+
+databases:
+  - name: snokgu-db
+    region: frankfurt
+    plan: free
+    databaseName: snokgu
+    user: snokgu
+    postgresMajorVersion: "17"
+    ipAllowList: []

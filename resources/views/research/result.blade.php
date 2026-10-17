@@ -1,0 +1,3 @@
+@extends('layouts.app')
+@section('title',$research->title)
+@section('content')<x-page-head :title="$research->title" eyebrow="ПУБЛИЧНЫЙ РЕЗУЛЬТАТ ИССЛЕДОВАНИЯ"><div class="detail-meta"><span class="badge">{{ $research->result_type }}</span><span class="badge badge-green">Публикация согласована участниками</span></div></x-page-head><article class="container narrow page-content"><div class="article-body">{{ $research->public_summary }}</div><p class="hint" style="margin-top:25px">Опубликован отдельный согласованный текст. Заявка, рабочие комментарии и материалы исследования закрыты.</p><a href="/research" class="button button-primary" style="margin-top:25px">Попробовать своё исследование</a></article>@endsection

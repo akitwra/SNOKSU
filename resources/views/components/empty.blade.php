@@ -1,0 +1,1 @@
+@props(['title'=>'Здесь пока тихо','text'=>'Новые материалы появятся позже.'])<div class="empty-state"><span class="empty-icon"><x-icon name="spark"/></span><h3>{{ $title }}</h3><p>{{ $text }}</p>{{ $slot }}</div>

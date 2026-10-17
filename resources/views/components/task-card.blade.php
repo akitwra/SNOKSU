@@ -1,0 +1,6 @@
+@props(['task'])
+@php($tone=match($task->direction){'Социальные науки'=>'lilac','Цифровые технологии'=>'blue','Естественные науки'=>'green',default=>'peach'})
+<article class="task-card tone-{{ $tone }}">
+ <div class="task-visual"><span class="badge">{{ $task->level }}</span><x-research-art :kind="$tone"/><span class="visual-index">{{ str_pad($task->id,2,'0',STR_PAD_LEFT) }} / ИССЛЕДУЙ</span></div>
+ <div class="task-body"><div class="overline">{{ $task->direction }}</div><h3><a href="/research/{{ $task->id }}">{{ $task->title }}</a></h3><p>{{ $task->summary }}</p><div class="task-meta"><span><x-icon name="clock"/>{{ $task->hours }} ч / неделю</span><span><x-icon name="users"/>{{ $task->participation }}</span></div><div class="card-bottom"><span class="availability {{ !$task->accepting?'closed':'' }}">{{ $task->accepting?'Набор открыт · '.$task->free_seats.' мест':'Набор закрыт' }}</span><a href="/research/{{ $task->id }}" class="circle-link" aria-label="Подробнее: {{ $task->title }}"><x-icon name="up-right"/></a></div><div class="card-footnote">{{ $task->is_demo?'Пример задачи · ':'' }}{{ $task->mentor->name }}</div></div>
+</article>

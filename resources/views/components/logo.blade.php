@@ -1,0 +1,1 @@
+<a href="/" {{ $attributes->class(['brand']) }} aria-label="СНО КГУ — на главную"><span class="brand-text">СНО<span>КГУ</span></span><span class="brand-description">Студенческое<br>научное общество</span></a>

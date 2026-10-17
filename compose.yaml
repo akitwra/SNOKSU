@@ -1,0 +1,38 @@
+name: snokgu
+services:
+  app:
+    image: snokgu-app
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: snokgu
+      DB_USERNAME: snokgu
+      DB_PASSWORD: local-development-only
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:17.11
+    environment:
+      POSTGRES_DB: snokgu
+      POSTGRES_USER: snokgu
+      POSTGRES_PASSWORD: local-development-only
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/init-test-db.sql:/docker-entrypoint-initdb.d/01-test.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U snokgu -d snokgu"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+volumes:
+  postgres-data:

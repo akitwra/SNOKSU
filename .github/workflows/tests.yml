@@ -1,0 +1,38 @@
+name: Laravel checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17.11
+        env:
+          POSTGRES_DB: snokgu_test
+          POSTGRES_USER: snokgu
+          POSTGRES_PASSWORD: local-development-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U snokgu -d snokgu_test"
+          --health-interval 5s --health-timeout 3s --health-retries 15
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_USERNAME: snokgu
+      DB_PASSWORD: local-development-only
+    steps:
+      - uses: actions/checkout@v6
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, dom, xml, xmlwriter, pdo_pgsql, bcmath, zip
+          coverage: none
+      - run: composer install --prefer-dist --no-interaction --no-progress
+      - run: cp .env.example .env && php artisan key:generate
+      - run: vendor/bin/pint --test
+      - run: php artisan test
