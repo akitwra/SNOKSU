@@ -27,10 +27,36 @@ document.addEventListener('DOMContentLoaded', () => {
     if(params.get('match')){const note=document.createElement('p');note.className='match-explanation';note.textContent='Примеры подобраны по выбранным направлению, опыту и доступному времени. Это фильтры демонстрационного каталога.';document.querySelector('.filter-panel')?.after(note);}
   }
   if(route==='/mentors')filter('.mentor-card',data.mentors,m=>includes(m.name+' '+m.interests,params.get('q'))&&matchFields(m,['department'])&&(!params.get('beginners')||m.beginners));
-  if(route==='/knowledge'){
-    filter('.content-card',data.articles,a=>includes(a.title+' '+a.excerpt+' '+a.body,params.get('q'))&&matchFields(a,['category']));
-    document.querySelectorAll('.chip-list .chip').forEach(chip=>chip.classList.toggle('active',(new URL(chip.href).searchParams.get('category')||'')===(params.get('category')||'')));
+  if(route==='/conferences'||route==='/conference-announcements'){
+    let shown=0;
+    document.querySelectorAll('[data-conference-id]').forEach(card=>{
+      const conference=data.events.find(item=>String(item.id)===card.dataset.conferenceId);
+      const show=!!conference&&includes(conference.title+' '+conference.description,params.get('q'))&&(route!=='/conference-announcements'||new Date(conference.starts_at)>new Date());
+      card.hidden=!show;if(show)shown++;
+    });
+    if(!shown&&!document.querySelector('[data-conference-list] .empty-state')){
+      const empty=document.createElement('p');empty.className='empty-state';empty.textContent='Конференции по этому запросу не найдены.';document.querySelector('[data-conference-list]')?.append(empty);
+    }
   }
+  document.querySelectorAll('form[data-preview-question]').forEach(form=>{
+    const endpoint=form.dataset.previewQuestion;
+    const button=form.querySelector('button[type="submit"]');
+    const status=form.querySelector('[data-question-status]');
+    if(endpoint)button.disabled=false;
+    form.addEventListener('submit',async event=>{
+      event.preventDefault();
+      if(!endpoint||!form.reportValidity())return;
+      button.disabled=true;button.setAttribute('aria-busy','true');status.textContent='Отправляем вопрос…';
+      try{
+        const payload=Object.fromEntries(new FormData(form));
+        const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(payload),credentials:'omit'});
+        const result=await response.json();
+        if(!response.ok){status.textContent=response.status===422?Object.values(result.errors||{}).flat().join(' '):'Не удалось передать вопрос. Попробуй позже.';return;}
+        form.reset();status.textContent=result.message||'Вопрос передан представителям СНО.';
+      }catch(error){status.textContent='Связь с сервером недоступна. Вопрос не отправлен. Попробуй позже.';}
+      finally{button.disabled=false;button.removeAttribute('aria-busy');}
+    });
+  });
   if(route==='/events'){
     const events=data.events.filter(e=>!params.get('type')||e.type===params.get('type'));
     document.querySelectorAll('.tabs a').forEach(link=>link.classList.toggle('active',(new URL(link.href).searchParams.get('view')||'list')===(params.get('view')||'list')));

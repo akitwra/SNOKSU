@@ -58,7 +58,7 @@ class SocietyTest extends TestCase
 
     public function test_public_sections_work_without_registration(): void
     {
-        foreach (['/', '/about', '/research', '/research/match', '/research/'.$this->task()->id, '/mentors', '/mentors/'.$this->mentor->id, '/events', '/events?view=calendar', '/events/'.Event::first()->id, '/knowledge', '/articles/'.Content::where('type', 'knowledge')->first()->id, '/login', '/register'] as $url) {
+        foreach (['/', '/about', '/research', '/research/match', '/research/'.$this->task()->id, '/mentors', '/mentors/'.$this->mentor->id, '/events', '/events?view=calendar', '/events/'.Event::first()->id, '/conferences', '/conference-announcements', '/questions', '/articles/'.Content::where('type', 'knowledge')->first()->id, '/login', '/register'] as $url) {
             $this->get($url)->assertOk();
         }
         $this->get('/templates/plan')->assertOk()->assertHeader('Content-Disposition', 'attachment; filename="plan.md"');
@@ -268,11 +268,12 @@ class SocietyTest extends TestCase
         $this->assertSame('mentor', $student->fresh()->role);
     }
 
-    public function test_search_filters_empty_state_and_knowledge_work(): void
+    public function test_search_filters_empty_state_and_conferences_work(): void
     {
         $this->get('/research?q=НесуществующийВопрос')->assertOk()->assertSee('Пока нет подходящих задач');
         $this->get('/research?direction='.urlencode('Цифровые технологии').'&hours=4&open=1')->assertOk()->assertSee('Может ли нейросеть')->assertDontSee('Что расскажет вода');
-        $this->get('/knowledge?q='.urlencode('гипотеза'))->assertOk()->assertSee('Нужна ли вашему исследованию гипотеза?');
+        $this->get('/conferences?q='.urlencode('первые исследования'))->assertOk()->assertSee('Студенческая конференция: первые исследования');
+        $this->get('/knowledge')->assertRedirect('/conferences');
     }
 
     public function test_registration_and_password_authentication_use_real_sessions(): void

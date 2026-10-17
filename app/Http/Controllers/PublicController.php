@@ -99,17 +99,33 @@ class PublicController extends Controller
         return view('events.show', compact('event'));
     }
 
-    public function knowledge(Request $r)
+    public function conferences(Request $request)
     {
-        $r->validate(['q' => 'nullable|string|max:150', 'category' => 'nullable|string|max:100']);
-        $q = Content::where('type', 'knowledge')->where('is_published', true);
-        if ($r->filled('q')) {
-            $q->where(fn ($q) => $q->where('title', 'ilike', '%'.$r->q.'%')->orWhere('body', 'ilike', '%'.$r->q.'%'));
-        }if ($r->filled('category')) {
-            $q->where('category', $r->category);
+        return $this->conferenceList($request, false);
+    }
+
+    public function announcements(Request $request)
+    {
+        return $this->conferenceList($request, true);
+    }
+
+    private function conferenceList(Request $request, bool $announcements)
+    {
+        $request->validate(['q' => 'nullable|string|max:150']);
+        $query = Event::where('is_published', true)->where('type', 'Конференция');
+        if ($announcements) {
+            $query->where('starts_at', '>', now());
+        }
+        if ($request->filled('q')) {
+            $query->where(fn ($q) => $q->where('title', 'ilike', '%'.$request->q.'%')->orWhere('description', 'ilike', '%'.$request->q.'%'));
         }
 
-        return view('knowledge.index', ['articles' => $q->orderBy('id')->paginate(12)->withQueryString()]);
+        return view('conferences.index', ['conferences' => $query->orderBy('starts_at', $announcements ? 'asc' : 'desc')->paginate(12)->withQueryString(), 'announcements' => $announcements]);
+    }
+
+    public function knowledge()
+    {
+        return redirect('/conferences', 301);
     }
 
     public function content(Content $content)

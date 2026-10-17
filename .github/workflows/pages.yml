@@ -26,6 +26,8 @@ jobs:
       contents: read
       pages: read
     env:
+      QUESTIONS_FORM_URL: ${{ vars.QUESTIONS_FORM_URL }}
+      QUESTIONS_ENDPOINT: ${{ vars.QUESTIONS_ENDPOINT }}
       APP_ENV: local
       DB_CONNECTION: pgsql
       DB_HOST: 127.0.0.1

@@ -12,7 +12,6 @@ use Illuminate\Console\Command;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\ViewErrorBag;
 
 class ExportPages extends Command
 {
@@ -59,8 +58,8 @@ class ExportPages extends Command
 
             return self::FAILURE;
         }
-        $data = ['tasks' => $tasks->map(fn ($t) => ['id' => $t->id, 'title' => $t->title, 'summary' => $t->summary, 'direction' => $t->direction, 'level' => $t->level, 'work_type' => $t->work_type, 'participation' => $t->participation, 'hours' => $t->hours, 'open' => (bool) $t->accepting])->values(), 'mentors' => $mentors->map(fn ($m) => ['id' => $m->id, 'name' => $m->name, 'interests' => $m->mentorProfile->interests, 'department' => (string) $m->mentorProfile->department_id, 'beginners' => $m->mentorProfile->beginners])->values(), 'articles' => $articles->where('type', 'knowledge')->map(fn ($a) => ['id' => $a->id, 'title' => $a->title, 'excerpt' => $a->excerpt, 'body' => $a->body, 'category' => $a->category])->values(), 'events' => $events->map(fn ($e) => ['id' => $e->id, 'title' => $e->title, 'type' => $e->type, 'starts_at' => $e->starts_at->toIso8601String(), 'format' => $e->format])->values()];
-        $routes = ['/', '/about', '/research', '/research/match', '/mentors', '/events', '/knowledge'];
+        $data = ['tasks' => $tasks->map(fn ($t) => ['id' => $t->id, 'title' => $t->title, 'summary' => $t->summary, 'direction' => $t->direction, 'level' => $t->level, 'work_type' => $t->work_type, 'participation' => $t->participation, 'hours' => $t->hours, 'open' => (bool) $t->accepting])->values(), 'mentors' => $mentors->map(fn ($m) => ['id' => $m->id, 'name' => $m->name, 'interests' => $m->mentorProfile->interests, 'department' => (string) $m->mentorProfile->department_id, 'beginners' => $m->mentorProfile->beginners])->values(), 'events' => $events->map(fn ($e) => ['id' => $e->id, 'title' => $e->title, 'description' => $e->description, 'type' => $e->type, 'starts_at' => $e->starts_at->toIso8601String(), 'format' => $e->format])->values()];
+        $routes = ['/', '/about', '/research', '/research/match', '/mentors', '/events', '/conferences', '/conference-announcements', '/questions'];
         foreach ($tasks as $t) {
             $routes[] = '/research/'.$t->id;
         }
@@ -70,7 +69,7 @@ class ExportPages extends Command
         foreach ($events as $e) {
             $routes[] = '/events/'.$e->id;
         }
-        foreach ($articles as $a) {
+        foreach ($articles->where('type', '!=', 'knowledge') as $a) {
             $routes[] = '/articles/'.$a->id;
         }
         $kernel = app(Kernel::class);
@@ -85,10 +84,6 @@ class ExportPages extends Command
             $html = $response->getContent();
             $this->savePage($out, $uri, $this->transform($html, $uri, $data));
             $kernel->terminate($request, $response);
-        }
-        foreach (['/login' => 'Вход в серверную версию', '/register' => 'Регистрация в серверной версии', '/dashboard' => 'Личный кабинет', '/idea' => 'Предложить идею'] as $uri => $title) {
-            $html = view('pages.unavailable', compact('title') + ['errors' => new ViewErrorBag])->render();
-            $this->savePage($out, $uri, $this->transform($html, $uri, $data));
         }
         foreach (['plan', 'presentation', 'report'] as $kind) {
             $response = $kernel->handle(Request::create('http://pages-export.test/templates/'.$kind));
@@ -109,8 +104,8 @@ class ExportPages extends Command
         File::copy(public_path('favicon.svg'), $out.'/favicon.svg');
         File::put($out.'/.nojekyll', '');
         File::put($out.'/robots.txt', "User-agent: *\nDisallow: /\n");
-        File::put($out.'/404.html', File::get($out.'/dashboard/index.html'));
-        $this->info('Exported '.(count($routes) + 4).' public preview pages. Private workspaces and credentials were not exported.');
+        File::put($out.'/404.html', File::get($out.'/questions/index.html'));
+        $this->info('Exported '.(count($routes)).' public preview pages. Private workspaces and credentials were not exported.');
 
         return self::SUCCESS;
     }
@@ -161,6 +156,25 @@ class ExportPages extends Command
             $node->parentNode->removeChild($node);
         }
         foreach ($xpath->query('//form[translate(@method,"post","POST")="POST"]') as $form) {
+            if ($form->hasAttribute('data-question-form')) {
+                foreach (iterator_to_array($xpath->query('.//input[@name="_token"]', $form)) as $token) {
+                    $token->parentNode->removeChild($token);
+                }
+                $endpoint = config('society.questions_endpoint', '') ?? '';
+                if ($endpoint && ! preg_match('#^https://[^/]+/api/questions$#', $endpoint)) {
+                    throw new \RuntimeException('QUESTIONS_ENDPOINT must be an HTTPS URL ending in /api/questions.');
+                }
+                $form->setAttribute('data-preview-question', $endpoint);
+                $form->setAttribute('action', $endpoint ?: '#');
+                $button = $xpath->query('.//button[@type="submit"]', $form)->item(0);
+                $button->setAttribute('disabled', 'disabled');
+                $status = $xpath->query('.//*[@data-question-status]', $form)->item(0);
+                $status->textContent = $endpoint
+                    ? 'Вопрос поступит представителям СНО. Регистрация не нужна.'
+                    : 'Форма пока не принимает вопросы. Возможность отправки появится после подключения приёма обращений.';
+
+                continue;
+            }
             $notice = $dom->createElement('p', 'Отправка доступна в серверной версии. Это статическое превью.');
             $notice->setAttribute('class', 'alert info');
             $form->parentNode->replaceChild($notice, $form);
@@ -173,7 +187,7 @@ class ExportPages extends Command
             }
         }
         foreach ($xpath->query('//*[contains(concat(" ",normalize-space(@class)," ")," demo-strip ")]') as $banner) {
-            $banner->textContent = 'Статическое превью · Вход и отправка заявок работают в серверной версии';
+            $banner->textContent = 'Демонстрационное превью · События с отметкой «Пример» — учебные';
         }
         $body = $dom->getElementsByTagName('body')->item(0);
         $body->setAttribute('data-preview-route', $uri);

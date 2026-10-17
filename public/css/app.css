@@ -11,3 +11,16 @@
 
 .art-star .icon{width:32px;height:32px}
 [hidden]{display:none!important}
+
+/* Public conference pages and contact forms. */
+.header-inner{justify-content:space-between}.main-nav{margin-left:auto;gap:22px}
+.conference-search{margin:28px 0}.conference-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}.conference-card{border:1px solid var(--line);border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:18px;background:white}.conference-card-top,.conference-card-bottom{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.conference-card time{font-size:12px;color:var(--muted)}.conference-card h2{font-size:24px;line-height:1.35}.conference-card p{font-size:14px;line-height:1.8}.conference-card-bottom{margin-top:auto}.conference-contact{margin-top:64px;scroll-margin-top:24px}.conference-contact h2{margin:15px 0;font-size:34px}.conference-contact>div>p{max-width:430px;line-height:1.8}.question-form{margin-top:24px}.question-form .checkbox{align-items:flex-start;line-height:1.7}.question-form .checkbox input{flex-shrink:0;margin-top:5px}.question-delivery{margin:20px 0}.question-trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}.question-entry{margin-bottom:22px}.question-message{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:20px}
+@media(max-width:1200px){.main-nav{gap:14px}.main-nav>a{font-size:11px}}
+@media(max-width:1000px){.header-inner{flex-wrap:wrap}.main-nav{margin-left:0}}
+@media(max-width:700px){.conference-grid{grid-template-columns:1fr}.conference-card{padding:22px}.conference-card h2{font-size:22px}.conference-contact{margin-top:38px}.conference-contact h2{font-size:28px}.conference-card p{font-size:12px}.conference-contact .contact-card{padding:22px}.list-header>.tabs{flex-wrap:wrap}.main-nav.is-open{width:100%}}
+.campus-art{width:110%;max-width:110%}
+@media(max-width:1000px){.site-header{position:relative}.header-inner{height:80px;flex-wrap:nowrap}.menu-toggle{display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:none;border:0;color:var(--ink);margin-left:auto;order:3}.main-nav{display:none;position:absolute;left:0;right:0;top:100%;z-index:10;flex-direction:column;align-items:stretch;padding:14px 20px;background:white;border-bottom:1px solid var(--line);box-shadow:0 10px 20px #28334b10;gap:0}.main-nav.is-open{display:flex}.main-nav a{font-size:13px;padding:12px 6px}.main-nav a.active:after{display:none}.main-nav a.active{background:var(--tint)}}
+.question-delivery{color:var(--muted);font-size:12px}
+
+.conference-search .search-field input[name=q]{padding-left:43px}
+@media(max-width:700px){.conference-header{display:block}.conference-header>.tabs{display:flex;flex-wrap:nowrap;margin-bottom:18px}.conference-header>.tabs a{flex:1;text-align:center;white-space:nowrap;padding:9px}.conference-header>.text-link{display:inline-flex}}

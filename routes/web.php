@@ -7,6 +7,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\PublicationController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ResearchController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,6 +22,11 @@ Route::get('/mentors', [PublicController::class, 'mentors']);
 Route::get('/mentors/{mentor}', [PublicController::class, 'mentor'])->whereNumber('mentor');
 Route::get('/events', [PublicController::class, 'events']);
 Route::get('/events/{event}', [PublicController::class, 'event'])->whereNumber('event');
+Route::get('/conferences', [PublicController::class, 'conferences']);
+Route::get('/conference-announcements', [PublicController::class, 'announcements']);
+Route::get('/questions', [QuestionController::class, 'create']);
+Route::post('/api/questions', [QuestionController::class, 'store'])->middleware('throttle:5,1');
+Route::post('/questions', [QuestionController::class, 'store'])->middleware('throttle:5,1');
 Route::get('/knowledge', [PublicController::class, 'knowledge']);
 Route::get('/articles/{content}', [PublicController::class, 'content'])->whereNumber('content');
 Route::get('/templates/{kind}', [PublicController::class, 'template']);
@@ -56,6 +62,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/notices/read', [DashboardController::class, 'read']);
     Route::post('/events/{event}/register', [EventController::class, 'register'])->middleware('throttle:10,1');
     Route::delete('/events/{event}/register', [EventController::class, 'cancel']);
+    Route::get('/manage/questions', [QuestionController::class, 'index']);
     Route::get('/manage/settings', [AdminController::class, 'settings']);
     Route::post('/manage/settings', [AdminController::class, 'saveSettings']);
     Route::get('/manage/statistics', [AdminController::class, 'stats']);
