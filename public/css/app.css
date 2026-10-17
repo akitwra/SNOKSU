@@ -10,3 +10,4 @@
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 .art-star .icon{width:32px;height:32px}
+[hidden]{display:none!important}

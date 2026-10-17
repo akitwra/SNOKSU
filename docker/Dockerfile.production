@@ -29,8 +29,11 @@ RUN mkdir -p storage/app/private storage/app/public storage/framework/cache/data
       storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && composer dump-autoload --no-dev --optimize --no-interaction --no-scripts \
     && php artisan package:discover --ansi \
+    && chmod -R a+rX /var/www/html \
     && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod +x docker/production-entrypoint.sh
+    && chmod +x docker/production-entrypoint.sh \
+    && echo "ServerName localhost" > /etc/apache2/conf-available/server-name.conf \
+    && a2enconf server-name
 COPY docker/apache-production.conf /etc/apache2/sites-available/000-default.conf
 COPY docker/php-production.ini /usr/local/etc/php/conf.d/production.ini
 EXPOSE 10000

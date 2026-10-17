@@ -35,4 +35,19 @@ jobs:
       - run: composer install --prefer-dist --no-interaction --no-progress
       - run: cp .env.example .env && php artisan key:generate
       - run: vendor/bin/pint --test
-      - run: php artisan test
+      - run: php artisan test --log-junit=test-results.xml
+      - name: Annotate test failures
+        if: failure()
+        run: |
+          python3 - <<'PYTHON'
+          import pathlib, xml.etree.ElementTree as ET
+          report = pathlib.Path('test-results.xml')
+          if report.exists():
+              for case in ET.parse(report).iter('testcase'):
+                  for failure in list(case):
+                      if failure.tag not in ('error', 'failure'):
+                          continue
+                      message = (case.get('name', '') + ': ' + (failure.text or failure.get('message', '')))[:3000]
+                      message = message.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+                      print('::error::' + message)
+          PYTHON

@@ -26,3 +26,4 @@ Thumbs.db
 /tests/browser/node_modules
 /playwright-report
 /test-results
+/dist-pages

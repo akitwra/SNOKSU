@@ -9,3 +9,4 @@ tests/browser/node_modules
 tests
 docs
 .github
+dist-pages

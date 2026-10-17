@@ -1,0 +1,68 @@
+name: Publish public preview to GitHub Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17.11
+        env:
+          POSTGRES_DB: snokgu_preview
+          POSTGRES_USER: snokgu
+          POSTGRES_PASSWORD: preview-ci-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U snokgu -d snokgu_preview"
+          --health-interval 3s --health-timeout 3s --health-retries 20
+    permissions:
+      contents: read
+      pages: read
+    env:
+      APP_ENV: local
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: snokgu_preview
+      DB_USERNAME: snokgu
+      DB_PASSWORD: preview-ci-only
+      SESSION_DRIVER: array
+      CACHE_STORE: array
+    steps:
+      - uses: actions/checkout@v6
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, dom, xml, xmlwriter, pdo_pgsql, zip, bcmath
+          coverage: none
+      - run: composer install --prefer-dist --no-interaction --no-progress
+      - run: cp .env.example .env && php artisan key:generate
+      - run: php artisan migrate --seed --force
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+      - name: Export guest-only preview
+        run: php artisan society:export-pages --base-path="${{ steps.pages.outputs.base_path }}"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist-pages
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy preview
+        id: deployment
+        uses: actions/deploy-pages@v4
