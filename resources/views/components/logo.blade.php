@@ -1,1 +1,1 @@
-<a href="/" {{ $attributes->class(['brand']) }} aria-label="СНО КГУ — на главную"><span class="brand-text">СНО<span>КГУ</span></span><span class="brand-description">Студенческое<br>научное общество</span></a>
+<a href="/" {{ $attributes->class(['brand']) }} aria-label="СНО КГУ — на главную"><img src="/images/kgu-logo.png" class="brand-logo" alt="Курский государственный университет" width="64" height="80" decoding="async"><span class="brand-caption"><span class="brand-title">СНО КГУ</span><span class="brand-description">Студенческое<br>научное общество</span></span></a>
